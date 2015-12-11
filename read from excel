@@ -1,0 +1,36 @@
+Sub ReadDataFromAllWorkbooksInFolder()
+Dim FolderName As String, wbName As String, r As Long, cValue As Variant
+Dim wbList() As String, wbCount As Integer, i As Integer
+    FolderName = "D:\testing"
+    ' create list of workbooks in foldername' --- Comment
+    wbCount = 0
+    wbName = Dir(FolderName &amp; "\" &amp; "*.xls")""
+    While wbName &lt;&gt; ""
+        wbCount = wbCount + 1
+        ReDim Preserve wbList(1 To wbCount)
+        wbList(wbCount) = wbName
+        wbName = Dir
+    Wend
+    If wbCount = 0 Then Exit Sub
+    ' get values from each workbook' --- Comment
+    r = 0
+    Workbooks.Add
+    For i = 1 To wbCount
+        r = r + 1
+        cValue = GetInfoFromClosedFile(FolderName, wbList(i), "Sheet1", "A1")
+        Cells(r, 1).Formula = wbList(i)
+        Cells(r, 2).Formula = cValue
+    Next i
+End Sub
+
+Private Function GetInfoFromClosedFile(ByVal wbPath As String, _
+    wbName As String, wsName As String, cellRef As String) As Variant
+Dim arg As String
+    GetInfoFromClosedFile = ""
+    If Right(wbPath, 1) &lt;&gt; "\" Then wbPath = wbPath &amp; "\"
+    If Dir(wbPath &amp; "\" &amp; wbName) = "" Then Exit Function
+    arg = "'" &amp; wbPath &amp; "[" &amp; wbName &amp; "]" &amp; _
+        wsName &amp; "'!" &amp; Range(cellRef).Address(True, True, xlR1C1)
+    On Error Resume Next
+    GetInfoFromClosedFile = ExecuteExcel4Macro(arg)
+End Function
